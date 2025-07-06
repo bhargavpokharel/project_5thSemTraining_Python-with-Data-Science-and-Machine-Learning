@@ -1,16 +1,8 @@
 {
  "cells": [
   {
-   "cell_type": "markdown",
-   "id": "ccd4da15",
-   "metadata": {},
-   "source": [
-    "\n"
-   ]
-  },
-  {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 3,
    "id": "c7605372",
    "metadata": {},
    "outputs": [],
@@ -23,7 +15,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 4,
    "id": "c3a0a2d4",
    "metadata": {},
    "outputs": [
@@ -50,31 +42,7 @@
       "1      0          PC 17599  71.2833   C85        C  \n",
       "2      0  STON/O2. 3101282   7.9250   NaN        S  \n",
       "3      0            113803  53.1000  C123        S  \n",
-      "4      0            373450   8.0500   NaN        S  \n"
-     ]
-    }
-   ],
-   "source": [
-    "# reading the data\n",
-    "\n",
-    "import pandas as pd\n",
-    "\n",
-    "train_df = pd.read_csv('train.csv')\n",
-    "test_df = pd.read_csv('test.csv')\n",
-    "\n",
-    "print(train_df.head())"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 7,
-   "id": "63bee491",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
+      "4      0            373450   8.0500   NaN        S  \n",
       "<class 'pandas.core.frame.DataFrame'>\n",
       "RangeIndex: 891 entries, 0 to 890\n",
       "Data columns (total 12 columns):\n",
@@ -99,12 +67,40 @@
     }
    ],
    "source": [
+    "# reading the data\n",
+    "\n",
+    "import pandas as pd\n",
+    "\n",
+    "train_df = pd.read_csv('train.csv')\n",
+    "test_df = pd.read_csv('test.csv')\n",
+    "\n",
+    "print(train_df.head())\n",
     "print(train_df.info())"
    ]
   },
   {
+   "cell_type": "markdown",
+   "id": "7761ac73",
+   "metadata": {},
+   "source": [
+    "Age        → 714 non-null (missing ~177)\n",
+    "Cabin      → Only 204 non-null (too many missing → drop)\n",
+    "Embarked   → 889 non-null (missing 2 rows)\n",
+    "\n",
+    "Task:\n",
+    "\n",
+    "Fill Age with median (numeric).\n",
+    "\n",
+    "Drop Cabin (too many nulls, not worth fixing).\n",
+    "\n",
+    "Fill Embarked with mode (most frequent port).\n",
+    "\n",
+    "Drop Ticket and Name (not useful for now)."
+   ]
+  },
+  {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 5,
    "id": "9f02fd21",
    "metadata": {},
    "outputs": [
@@ -128,14 +124,14 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_2120\\3375003939.py:5: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
+      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_24048\\3375003939.py:5: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
       "The behavior will change in pandas 3.0. This inplace method will never work because the intermediate object on which we are setting values always behaves as a copy.\n",
       "\n",
       "For example, when doing 'df[col].method(value, inplace=True)', try using 'df.method({col: value}, inplace=True)' or df[col] = df[col].method(value) instead, to perform the operation inplace on the original object.\n",
       "\n",
       "\n",
       "  train_df[\"Age\"].fillna(train_df[\"Age\"].median(), inplace=True)\n",
-      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_2120\\3375003939.py:8: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
+      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_24048\\3375003939.py:8: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
       "The behavior will change in pandas 3.0. This inplace method will never work because the intermediate object on which we are setting values always behaves as a copy.\n",
       "\n",
       "For example, when doing 'df[col].method(value, inplace=True)', try using 'df.method({col: value}, inplace=True)' or df[col] = df[col].method(value) instead, to perform the operation inplace on the original object.\n",
@@ -160,8 +156,29 @@
    ]
   },
   {
+   "cell_type": "markdown",
+   "id": "3689b379",
+   "metadata": {},
+   "source": [
+    "### Step 1: Encode Categorical Variables\n",
+    "\n",
+    "To prepare the data for machine learning models, we need to convert non-numeric (categorical) columns into numeric values:\n",
+    "\n",
+    "- Convert \"Sex\":\n",
+    "  - male → 0\n",
+    "  - female → 1\n",
+    "\n",
+    "- Convert \"Embarked\":\n",
+    "  - S → 0\n",
+    "  - C → 1\n",
+    "  - Q → 2\n",
+    "\n",
+    "These encodings allow models like Random Forest to interpret the data correctly.\n"
+   ]
+  },
+  {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 6,
    "id": "e6d64464",
    "metadata": {},
    "outputs": [],
@@ -175,7 +192,7 @@
    "id": "862f1e59",
    "metadata": {},
    "source": [
-    "Prepare Features and Target\n",
+    "### Step 2: Prepare Features and Target\n",
     "\n",
     "We separate the dataset into:\n",
     "\n",
@@ -185,7 +202,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 7,
    "id": "077272fe",
    "metadata": {},
    "outputs": [
@@ -202,7 +219,7 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 7: Prepare Features and Target\n",
     "# Separate features (X) and target variable (y)\n",
     "X = train_df[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']]\n",
     "y = train_df['Survived']\n",
@@ -215,7 +232,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 8,
    "id": "d0c70dab",
    "metadata": {},
    "outputs": [
@@ -231,14 +248,13 @@
     }
    ],
    "source": [
-    "#Data Splitting and Scaling\n",
+    "# Cell 8: Data Splitting and Scaling\n",
     "# Split the training data into training and validation sets\n",
     "from sklearn.model_selection import train_test_split\n",
     "from sklearn.preprocessing import StandardScaler\n",
     "\n",
     "# Split data into training and validation sets\n",
     "X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)\n",
-    "#train_test_split returns a tuple of 4 arrays\n",
     "\n",
     "print(\"Training set size:\", X_train.shape)\n",
     "print(\"Validation set size:\", X_val.shape)\n",
@@ -253,7 +269,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 9,
    "id": "f719bd4f",
    "metadata": {},
    "outputs": [
@@ -277,7 +293,7 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 9: Model Selection and Training\n",
     "# Train Random Forest classifier\n",
     "from sklearn.ensemble import RandomForestClassifier\n",
     "from sklearn.metrics import accuracy_score, classification_report\n",
@@ -300,7 +316,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": 10,
    "id": "7473dc3b",
    "metadata": {},
    "outputs": [
@@ -315,7 +331,7 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 10: Hyperparameter Tuning\n",
     "# Tune hyperparameters to improve accuracy\n",
     "from sklearn.model_selection import GridSearchCV\n",
     "\n",
@@ -343,7 +359,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 14,
+   "execution_count": 11,
    "id": "e3ebfab9",
    "metadata": {},
    "outputs": [
@@ -360,21 +376,21 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_2120\\4165078898.py:8: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
+      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_24048\\4230223748.py:9: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
       "The behavior will change in pandas 3.0. This inplace method will never work because the intermediate object on which we are setting values always behaves as a copy.\n",
       "\n",
       "For example, when doing 'df[col].method(value, inplace=True)', try using 'df.method({col: value}, inplace=True)' or df[col] = df[col].method(value) instead, to perform the operation inplace on the original object.\n",
       "\n",
       "\n",
       "  test_df_clean['Age'].fillna(test_df_clean['Age'].median(), inplace=True)\n",
-      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_2120\\4165078898.py:9: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
+      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_24048\\4230223748.py:10: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
       "The behavior will change in pandas 3.0. This inplace method will never work because the intermediate object on which we are setting values always behaves as a copy.\n",
       "\n",
       "For example, when doing 'df[col].method(value, inplace=True)', try using 'df.method({col: value}, inplace=True)' or df[col] = df[col].method(value) instead, to perform the operation inplace on the original object.\n",
       "\n",
       "\n",
       "  test_df_clean['Fare'].fillna(test_df_clean['Fare'].median(), inplace=True)\n",
-      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_2120\\4165078898.py:10: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
+      "C:\\Users\\Bhargav Pokharel\\AppData\\Local\\Temp\\ipykernel_24048\\4230223748.py:11: FutureWarning: A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method.\n",
       "The behavior will change in pandas 3.0. This inplace method will never work because the intermediate object on which we are setting values always behaves as a copy.\n",
       "\n",
       "For example, when doing 'df[col].method(value, inplace=True)', try using 'df.method({col: value}, inplace=True)' or df[col] = df[col].method(value) instead, to perform the operation inplace on the original object.\n",
@@ -385,7 +401,7 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 11: Predict on Test Data\n",
     "# Apply the selected model on the test dataset\n",
     "# First, clean and preprocess test data similar to training data\n",
     "\n",
@@ -423,7 +439,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 15,
+   "execution_count": 12,
    "id": "1ab3531f",
    "metadata": {},
    "outputs": [
@@ -449,7 +465,8 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 12: Save Predictions\n",
+    "# Save predictions to CSV file\n",
     "submission.to_csv('titanic_predictions.csv', index=False)\n",
     "print(\"Predictions saved to 'titanic_predictions.csv'\")\n",
     "print(\"\\nFirst 10 predictions:\")\n",
@@ -458,7 +475,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 16,
+   "execution_count": 13,
    "id": "10e6d4f8",
    "metadata": {},
    "outputs": [
@@ -489,7 +506,7 @@
     }
    ],
    "source": [
-    "\n",
+    "# Cell 13: Visualization and Insights\n",
     "# Visualize feature importance and survival patterns\n",
     "\n",
     "# Feature importance\n",
@@ -538,32 +555,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 17,
-   "id": "2a589648",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Training data shape: (891, 12)\n",
-      "Test data shape:     (418, 11)\n"
-     ]
-    }
-   ],
-   "source": [
-    "import pandas as pd\n",
-    "\n",
-    "train_df = pd.read_csv(\"train.csv\")\n",
-    "test_df = pd.read_csv(\"test.csv\")\n",
-    "\n",
-    "print(\"Training data shape:\", train_df.shape)\n",
-    "print(\"Test data shape:    \", test_df.shape)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 14,
    "id": "77fc4360",
    "metadata": {},
    "outputs": [
@@ -575,52 +567,57 @@
       "TITANIC SURVIVAL PREDICTION - SUMMARY\n",
       "============================================================\n",
       "\n",
-      " Dataset Information:\n",
+      "📊 Dataset Information:\n",
       "Training samples: 891\n",
       "Test samples: 418\n",
       "Features used: 7\n",
       "\n",
-      " Model Performance:\n",
+      "🎯 Model Performance:\n",
       "Best validation accuracy: 0.8045\n",
       "Cross-validation score: 0.8301\n",
       "\n",
-      " Key Insights:\n",
+      "🔍 Key Insights:\n",
       "Overall survival rate: 38.38%\n",
-      "Female survival rate: nan%\n",
-      "Male survival rate: nan%\n",
+      "Female survival rate: 74.20%\n",
+      "Male survival rate: 18.89%\n",
       "Class 1 survival rate: 62.96%\n",
       "Class 2 survival rate: 47.28%\n",
       "Class 3 survival rate: 24.24%\n",
       "\n",
-      " Most Important Features:\n",
+      "🏆 Most Important Features:\n",
       "1. Sex: 0.3533\n",
       "2. Fare: 0.2146\n",
       "3. Age: 0.1838\n",
       "4. Pclass: 0.1302\n",
       "5. SibSp: 0.0461\n",
       "6. Embarked: 0.0369\n",
-      "7. Parch: 0.0352\n"
+      "7. Parch: 0.0352\n",
+      "\n",
+      "📁 Output Files:\n",
+      "- titanic_predictions.csv (predictions for test set)\n",
+      "\n",
+      "✅ Analysis Complete!\n"
      ]
     }
    ],
    "source": [
-    "\n",
+    "# Cell 14: Summary and Key Insights\n",
     "# Summarize key insights from the data and model results\n",
     "\n",
     "print(\"=\" * 60)\n",
     "print(\"TITANIC SURVIVAL PREDICTION - SUMMARY\")\n",
     "print(\"=\" * 60)\n",
     "\n",
-    "print(f\"\\n Dataset Information:\")\n",
+    "print(f\"\\n📊 Dataset Information:\")\n",
     "print(f\"Training samples: {len(train_df)}\")\n",
     "print(f\"Test samples: {len(test_df)}\")\n",
     "print(f\"Features used: {len(X.columns)}\")\n",
     "\n",
-    "print(f\"\\n Model Performance:\")\n",
+    "print(f\"\\n🎯 Model Performance:\")\n",
     "print(f\"Best validation accuracy: {best_accuracy:.4f}\")\n",
     "print(f\"Cross-validation score: {grid_search.best_score_:.4f}\")\n",
     "\n",
-    "print(f\"\\n Key Insights:\")\n",
+    "print(f\"\\n🔍 Key Insights:\")\n",
     "print(f\"Overall survival rate: {train_df['Survived'].mean():.2%}\")\n",
     "\n",
     "# Gender insights\n",
@@ -634,9 +631,14 @@
     "    class_survival = train_df[train_df['Pclass']==pclass]['Survived'].mean()\n",
     "    print(f\"Class {pclass} survival rate: {class_survival:.2%}\")\n",
     "\n",
-    "print(f\"\\n Most Important Features:\")\n",
+    "print(f\"\\n🏆 Most Important Features:\")\n",
     "for i, (feature, importance) in enumerate(zip(feature_importance['feature'], feature_importance['importance']), 1):\n",
-    "    print(f\"{i}. {feature}: {importance:.4f}\")\n"
+    "    print(f\"{i}. {feature}: {importance:.4f}\")\n",
+    "\n",
+    "print(f\"\\n📁 Output Files:\")\n",
+    "print(\"- titanic_predictions.csv (predictions for test set)\")\n",
+    "\n",
+    "print(\"\\n✅ Analysis Complete!\")"
    ]
   }
  ],
